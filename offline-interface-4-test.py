@@ -17,14 +17,16 @@ class App(customtkinter.CTk):
         # load images with light and dark mode image
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files-ctk")
         self.logo_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "CustomTkinter_logo_single.png")), size=(26, 26))
-        self.large_test_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
+        self.large_name_home = customtkinter.CTkImage(Image.open(os.path.join(image_path, "large-name-home.png")), size=(500, 150))
+        self.large_name_file = customtkinter.CTkImage(Image.open(os.path.join(image_path, "large-name-file.png")), size=(500, 150))
+        self.large_name_config = customtkinter.CTkImage(Image.open(os.path.join(image_path, "large-name-cofig.png")), size=(500, 150))
         self.image_icon_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "image_icon_light.png")), size=(20, 20))
-        self.home_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "home_dark.png")),
-                                                 dark_image=Image.open(os.path.join(image_path, "home_dark.png")), size=(20, 20))
-        self.file_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "file_dark.png")),
-                                                 dark_image=Image.open(os.path.join(image_path, "file_light.png")), size=(20, 20))
-        self.setting_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "setting_dark.png")),
-                                                     dark_image=Image.open(os.path.join(image_path, "setting_light.png")), size=(20, 20))
+        self.home_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "home-dark.png")),
+                                                 dark_image=Image.open(os.path.join(image_path, "home-light.png")), size=(20, 20))
+        self.file_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "file-dark.png")),
+                                                 dark_image=Image.open(os.path.join(image_path, "file-light.png")), size=(20, 20))
+        self.setting_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "config-dark.png")),
+                                                     dark_image=Image.open(os.path.join(image_path, "config-light.png")), size=(20, 20))
 
         # create navigation frame
         self.navigation_frame = customtkinter.CTkFrame(self, corner_radius=0)
@@ -58,7 +60,7 @@ class App(customtkinter.CTk):
         self.home_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.home_frame.grid_columnconfigure(0, weight=1)
 
-        self.home_frame_large_image_label = customtkinter.CTkLabel(self.home_frame, text="", image=self.large_test_image)
+        self.home_frame_large_image_label = customtkinter.CTkLabel(self.home_frame, text="", image=self.large_name_home)
         self.home_frame_large_image_label.grid(row=0, column=0, padx=20, pady=10)
 
         self.home_frame_button_2 = customtkinter.CTkButton(self.home_frame, text="Iniciar Mapeo", image=self.image_icon_image, compound="right")
@@ -68,7 +70,7 @@ class App(customtkinter.CTk):
         self.second_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.second_frame.grid_columnconfigure(0, weight=1)
 
-        self.second_frame_large_image_label = customtkinter.CTkLabel(self.second_frame, text="", image=self.large_test_image)
+        self.second_frame_large_image_label = customtkinter.CTkLabel(self.second_frame, text="", image=self.large_name_file)
         self.second_frame_large_image_label.grid(row=0, column=0, padx=20, pady=10)
 
         self.second_frame_button_1 = customtkinter.CTkButton(self.second_frame, text="Selcciona archivo", image=self.image_icon_image, compound="right")
@@ -79,7 +81,7 @@ class App(customtkinter.CTk):
         self.third_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.third_frame.grid_columnconfigure(0, weight=1)
 
-        self.third_frame_large_image_label = customtkinter.CTkLabel(self.third_frame, text="", image=self.large_test_image)
+        self.third_frame_large_image_label = customtkinter.CTkLabel(self.third_frame, text="", image=self.large_name_config)
         self.third_frame_large_image_label.grid(row=0, column=0, padx=20, pady=10)
 
         self.third_frame_button_1 = customtkinter.CTkButton(self.third_frame, text="Set Home", image=self.image_icon_image, compound="right")
