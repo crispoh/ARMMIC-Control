@@ -8,7 +8,7 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.title("Control ARMMIC")
-        self.geometry("700x450")
+        self.geometry("750x450")
 
         # Configura el grid layout 1x2
         self.grid_rowconfigure(0, weight=1)
@@ -62,7 +62,10 @@ class App(customtkinter.CTk):
 
         self.appearance_mode_menu = customtkinter.CTkOptionMenu(self.navigation_frame, values=["System", "Light", "Dark"],
                                                                 command=self.change_appearance_mode_event)
-        self.appearance_mode_menu.grid(row=6, column=0, padx=20, pady=20, sticky="s")
+        self.appearance_mode_menu.grid(row=6, column=0, padx=20, pady=(20,5), sticky="s")
+
+        self.navigation_frame_label = customtkinter.CTkLabel(self.navigation_frame, text="by CrisPoh", font=customtkinter.CTkFont(size=10))
+        self.navigation_frame_label.grid(row=7)
 
         ########################## Frame_HOME ##########################
         self.home_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
