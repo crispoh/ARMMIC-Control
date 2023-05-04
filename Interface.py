@@ -177,7 +177,7 @@ class App(customtkinter.CTk):
 
 if __name__ == "__main__":
     # Configurar el puerto serial
-    ser = serial.Serial('COM6', 115200)
+    ser = serial.Serial('COM5', 115200)
 
     # Wake up grbl
     start = '\r\n\r\n' + '\n'
