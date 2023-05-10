@@ -57,7 +57,7 @@ class App(customtkinter.CTk):
                     for j in range(n, 0, -1):
                         test_right() #ejecuta movimiento DECRECIENTE X
                         print("("+str(i)+","+str(j)+")") #ejecuta SERVO O SEÑAL
-                        time.sleep(1)   # Se detiene enel punto
+                        time.sleep(1)   # Se detiene en el punto
         
 
         # Cargar Imagenes

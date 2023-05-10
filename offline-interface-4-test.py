@@ -1,6 +1,8 @@
+from tkinter import messagebox
 import customtkinter as ctk
 import os
 from PIL import Image
+import math
 
 
 class CustomButton(ctk.CTkButton):
@@ -20,9 +22,53 @@ class App(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        # Cargar Imagenes
+        ############# BRAZO CONFIG #############
+
+        armX = 1500 #mm
+        armY = 500 #mm
+
+        ############ DEF PAG HOME ############
+
+        # Obtener datos de la pantalla al presionar el boton
+        def config_map():
+
+            X = self.nameEntryX.get() ## desplazamiento en X (mm)
+            Y = self.nameEntryY.get() ## desplazamiento en Y (mm)
+            A = self.nameEntryA.get() ## Altura inicial (mm)
+            B = self.nameEntryB.get() ## Ancho final (mm)
+
+            ## pasos en X
+            if int(X) > armX:
+                ## Error
+                ##Crear ventana de error en tkinter
+                messagebox.showerror("Error", "El desplazamiento en X es mayor que el largo del brazo")
+                print("Error: El desplazamiento en X es mayor que el largo del brazo")
+            else:
+                ## pasos en Y
+                if int(Y) > armY:
+                    ## Error
+                    ##Crear ventana de error en tkinter
+                    messagebox.showerror("Error", "El desplazamiento en Y es mayor que el ancho del brazo")
+                    print("Error: El desplazamiento en Y es mayor que el ancho del brazo")
+                else:
+                    ## pasos en X
+                    pasosX = armX/int(X)
+                    pasosX_floor = math.floor(pasosX)
+
+                    ## pasos en Y
+                    pasosY = armY/int(Y)
+                    pasosY_floor = math.floor(pasosY)
+                    start_maping(pasosX_floor, pasosY_floor, A, B)
+
+        #Iniciar mapeo con los datos ingresados
+        def start_maping(X, Y, A, B):
+            ##INGRESAR MAPEO
+            print(X, Y, A, B)
+
+
+        ############# Cargar Imagenes #############
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files-ctk")
-        self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "ctk_logo_single.png")), size=(26, 26))
+        self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "CustomTkinter_logo_single.png")), size=(26, 26))
         self.large_name_home = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-home.png")), size=(500, 150))
         self.large_name_file = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-file.png")), size=(500, 150))
         self.large_name_config = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-cofig.png")), size=(500, 150))
@@ -42,7 +88,7 @@ class App(ctk.CTk):
         self.row_image_right = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "row_dark_right.png")),
                                                      dark_image=Image.open(os.path.join(image_path, "row_light_right.png")), size=(20, 20))
 
-        # Barra navegacion IZQ
+        ############ Barra navegacion IZQ #############
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(4, weight=1)
@@ -90,9 +136,9 @@ class App(ctk.CTk):
         #### Label def x
         self.nameLabel = ctk.CTkLabel(self.frame_def_x, text="Densidad X")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
-        #### Entry def x
-        self.nameEntry = ctk.CTkEntry(self.frame_def_x, placeholder_text="Ingresar", justify="center")
-        self.nameEntry.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+        #### Entry def x ## DATO A INGRESAR
+        self.nameEntryX = ctk.CTkEntry(self.frame_def_x, placeholder_text="Ingresar", justify="center")
+        self.nameEntryX.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
 
         ###Entry Label Y 0
         self.frame_def_y = ctk.CTkFrame(self.frame_home_vars, width=70)
@@ -100,9 +146,9 @@ class App(ctk.CTk):
         #### Label def Y
         self.nameLabel = ctk.CTkLabel(self.frame_def_y, text="Densidad Y")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
-        ##### Entry def Y
-        self.nameEntry = ctk.CTkEntry(self.frame_def_y, placeholder_text="Ingresar", justify="center")
-        self.nameEntry.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+        ##### Entry def Y ## DATO A INGRESAR
+        self.nameEntryY = ctk.CTkEntry(self.frame_def_y, placeholder_text="Ingresar", justify="center")
+        self.nameEntryY.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
 
         ###Entry Label Altura
         self.frame_def_x1 = ctk.CTkFrame(self.frame_home_vars, width=70)
@@ -110,9 +156,9 @@ class App(ctk.CTk):
         #### Label def Altura
         self.nameLabel = ctk.CTkLabel(self.frame_def_x1, text="Altura Inicial")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
-        #### Entry def Altura
-        self.nameEntry = ctk.CTkEntry(self.frame_def_x1, placeholder_text="Ingresar", justify="center")
-        self.nameEntry.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+        #### Entry def Altura ## DATO A INGRESAR
+        self.nameEntryA = ctk.CTkEntry(self.frame_def_x1, placeholder_text="Ingresar", justify="center")
+        self.nameEntryA.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
 
         ###Entry Label Ancho
         self.frame_def_y1 = ctk.CTkFrame(self.frame_home_vars, width=70)
@@ -120,12 +166,12 @@ class App(ctk.CTk):
         #### Label def Ancho
         self.nameLabel = ctk.CTkLabel(self.frame_def_y1, text="Ancho Max.")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
-        ##### Entry def Ancho
-        self.nameEntry = ctk.CTkEntry(self.frame_def_y1, placeholder_text="Ingresar", justify="center")
-        self.nameEntry.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+        ##### Entry def Ancho ## DATO A INGRESAR
+        self.nameEntryB = ctk.CTkEntry(self.frame_def_y1, placeholder_text="Ingresar", justify="center")
+        self.nameEntryB.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
 
         ## Boton_Frame_HOME
-        self.home_frame_button_2 = ctk.CTkButton(self.home_frame, text="Iniciar Mapeo", image=self.image_icon_image, compound="right")
+        self.home_frame_button_2 = ctk.CTkButton(self.home_frame, text="Iniciar Mapeo", image=self.image_icon_image, compound="right", command=config_map)
         self.home_frame_button_2.grid(row=3, column=0, padx=20, pady=10)
 
         ########################## Upload frame ##########################
