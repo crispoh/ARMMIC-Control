@@ -3,6 +3,7 @@ import customtkinter as ctk
 import os
 from PIL import Image
 import math
+import time
 
 
 class CustomButton(ctk.CTkButton):
@@ -24,47 +25,134 @@ class App(ctk.CTk):
 
         ############# BRAZO CONFIG #############
 
-        armX = 1500 #mm
-        armY = 500 #mm
+        armX = 500 #mm
+        armY = 1500 #mm
 
-        ############ DEF PAG HOME ############
+        ############# DEF PAG HOME #############
 
-        # Obtener datos de la pantalla al presionar el boton
+        # Función HOME (0,0), NO FUNCIONA FALTA EL SWITCH FINAL DE CARRERA
+        def go_home():
+            valor = '$H' + '\n'
+            ##ser.write(valor.encode())
+            print("YENDO A HOME...: " + valor)
+        # Función Subir un paso
+        def test_up(a):
+            valor = '$J=G21G91Y'+ str(a) +'F60' + '\n'
+            ##ser.write(valor.encode())
+            print("UP: " + str(a) + "mm = " + valor)
+        # Función BAJAR un paso
+        def test_down(a):
+            valor = '$J=G21G91Y-'+ str(a) +'F60' + '\n'
+            ##ser.write(valor.encode())
+            print("DOWN: " + str(a) + "mm = " + valor)
+        # Función un paso IZQUIERDA
+        def test_left(a):
+            valor = '$J=G21G91X-'+ str(a) +'F60' + '\n'
+            ##ser.write(valor.encode())
+            print("LEFT: " + str(a) + "mm = " + valor)
+        # Función un paso DERECHA
+        def test_right(a):
+            valor = '$J=G21G91X'+ str(a) +'F60' + '\n'
+            ##ser.write(valor.encode())
+            print("RIGHT: " + str(a) + "mm = " + valor)
+
+        
+        ############# Configuración de los datos #############
         def config_map():
 
             X = self.nameEntryX.get() ## desplazamiento en X (mm)
             Y = self.nameEntryY.get() ## desplazamiento en Y (mm)
             A = self.nameEntryA.get() ## Altura inicial (mm)
             B = self.nameEntryB.get() ## Ancho final (mm)
+            ##Configuración de los datos
+            ##ceros
+            if int(X) == 0 and int(Y) == 0:
+                messagebox.showerror("Error", "El desplazamiento en X e Y no pueden ser 0")
+
+            ## new config arm x
+            if int(B) > 0 and int(B) <= armX:
+                new_armX = int(B) ## nuevo ancho del brazo
+            else:
+                messagebox.showerror("Error", "El ancho final está fuera del rango" + "\n" + "Rango: 1mm - " +str(armX)+ "mm" )
+                print("Error: El ancho final está fuera del rango. Rango: 1mm - " +str(armX)+ "mm")
+
+            ## new config arm y
+            if int(A) >= 0 and int(A) <= armY:
+                if int(A) == 0:
+                    new_armY = armY ## nuevo largo del brazo
+                else:
+                    new_armY = armY - int(A)
+            else:
+                messagebox.showerror("Error", "La altitud del brazo está fuera del rango" + "\n" + "Rango: 0mm - " +str(armY)+ "mm" )
+                print("Error: La altitud del brazo está fuera del rango. Rango: 0mm - " +str(armY)+ "mm")
 
             ## pasos en X
-            if int(X) > armX:
-                ## Error
-                ##Crear ventana de error en tkinter
-                messagebox.showerror("Error", "El desplazamiento en X es mayor que el largo del brazo")
-                print("Error: El desplazamiento en X es mayor que el largo del brazo")
+            if int(X) > new_armX:
+                ## Error X
+                messagebox.showerror("Error", "El desplazamiento en X es mayor que el largo del brazo" + "\n" + "MAX: " +str(new_armX)+ "mm")
+                print("Error: El desplazamiento en X es mayor que el largo del brazo " + str(new_armX))
             else:
                 ## pasos en Y
-                if int(Y) > armY:
-                    ## Error
-                    ##Crear ventana de error en tkinter
-                    messagebox.showerror("Error", "El desplazamiento en Y es mayor que el ancho del brazo")
-                    print("Error: El desplazamiento en Y es mayor que el ancho del brazo")
+                if int(Y) > new_armY:
+                    ## Error Y
+                    messagebox.showerror("Error", "El desplazamiento en Y es mayor que el ancho del brazo" + "\n" + "MAX: " +str(new_armY)+ "mm")
+                    print("Error: El desplazamiento en Y es mayor que el ancho del brazo " + str(new_armY))
                 else:
                     ## pasos en X
-                    pasosX = armX/int(X)
+                    pasosX = new_armX/int(X)
+                    ##Aproximamos a un numero entero
                     pasosX_floor = math.floor(pasosX)
 
                     ## pasos en Y
-                    pasosY = armY/int(Y)
+                    pasosY = new_armY/int(Y)
+                    ##Aproximamos a un numero entero
                     pasosY_floor = math.floor(pasosY)
-                    start_maping(pasosX_floor, pasosY_floor, A, B)
+                    messagebox.showinfo("Datos", "Se va a ejecutar el mapeo con los siguientes datos:" + "\n" 
+                                        + str(pasosX_floor) + " pasos con desplazamiento en X cada " + str(X) + "mm" + "\n"
+                                        + str(pasosY_floor) + " pasos con desplazamiento en Y cada " + str(Y) + "mm" + "\n" 
+                                        + "Total de pasos: " + str(( pasosX_floor + 1 )*( pasosY_floor + 1 )) + "\n"
+                                        + "Altura inicial: " + str(A) + "mm" + "\n" 
+                                        + "Ancho final: " + str(B) + "mm"+ "\n" 
+                                        + "Work Zone: Alto=" + str(new_armY) + "mm x Ancho:" + str(new_armX) + "mm")
+                    ##Confirmar datos por el usuario con un messagebox de aceptar o cancelar    
+                    if messagebox.askokcancel("Confirmar", "¿Desea continuar con el mapeo?"):
+                        ##Iniciar mapeo
+                        start_maping(pasosX_floor, pasosY_floor, X, Y, A)
+                    else:
+                        print("Mapeo cancelado")
 
-        #Iniciar mapeo con los datos ingresados
-        def start_maping(X, Y, A, B):
-            ##INGRESAR MAPEO
-            print(X, Y, A, B)
+        ############# Fin de la configuración de los datos #############
 
+        ############# Iniciar mapeo con los datos ingresados #############
+
+        def start_maping(XF, YF, X, Y, A):
+
+            print("Iniciando mapeo")
+            ##Setear configuracion inicial
+
+            go_home() #ejecuta movimiento HOME
+            test_up(A) #ejecuta movimiento CRECIENTE Y
+
+            ##EJECUTAR MAPEO
+            j,i = 0,0
+            for i in range(XF):
+                test_up(X) #ejecuta movimiento CRECIENTE Y
+                print("("+str(i)+","+str(j)+")") #ejecuta SERVO O SEÑAL
+                time.sleep(0.5) # Se detiene en el punto
+                if i % 2 == 0:
+                    for j in range(YF):
+                        test_left(Y) #ejecuta movimiento CRECIENTE X
+                        print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
+                        #ejecuta SERVO O SEÑAL
+                        time.sleep(0.5)   # Se detiene enel punto  
+                else:
+                    for j in range(YF, 0, -1):
+                        test_right(Y) #ejecuta movimiento DECRECIENTE X
+                        print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
+                        #ejecuta SERVO O SEÑAL
+                        time.sleep(0.5) # Se detiene en el punto
+
+        ############# FIN MAPEO #############
 
         ############# Cargar Imagenes #############
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files-ctk")
@@ -79,16 +167,18 @@ class App(ctk.CTk):
                                                  dark_image=Image.open(os.path.join(image_path, "file-light.png")), size=(20, 20))
         self.setting_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "config-dark.png")),
                                                      dark_image=Image.open(os.path.join(image_path, "config-light.png")), size=(20, 20))
-        self.row_image_down = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "row_dark_down.png")),
-                                                     dark_image=Image.open(os.path.join(image_path, "row_light_down.png")), size=(20, 20))
-        self.row_image_up = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "row_dark_up.png")),
-                                                     dark_image=Image.open(os.path.join(image_path, "row_light_up.png")), size=(20, 20))
-        self.row_image_left = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "row_dark_left.png")),
-                                                     dark_image=Image.open(os.path.join(image_path, "row_light_left.png")), size=(20, 20))
-        self.row_image_right = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "row_dark_right.png")),
-                                                     dark_image=Image.open(os.path.join(image_path, "row_light_right.png")), size=(20, 20))
+        self.row_image_down = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_down.png")), size=(20, 20))
+        self.row_image_up = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_up.png")), size=(20, 20))
+        self.row_image_left = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_left.png")), size=(20, 20))
+        self.row_image_right = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_right.png")), size=(20, 20))
 
-        ############ Barra navegacion IZQ #############
+        ##Proxima implementacion...
+        ##self.row_image_down_left = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_down_left.png")), size=(20, 20))
+        ##self.row_image_down_right = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_down_right.png")), size=(20, 20))
+        ##self.row_image_up_left = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_up_left.png")), size=(20, 20))
+        ##self.row_image_up_right = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_up_right.png")), size=(20, 20))
+
+        ############# Barra navegacion IZQ #############
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(4, weight=1)
@@ -119,7 +209,7 @@ class App(ctk.CTk):
         self.navigation_frame_label = ctk.CTkLabel(self.navigation_frame, text="by CrisPoh", font=ctk.CTkFont(size=10))
         self.navigation_frame_label.grid(row=7)
 
-        ########################## Frame_HOME ##########################
+        ############# Frame_HOME #############
         self.home_frame = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.home_frame.grid_columnconfigure(0, weight=1)
 
@@ -174,7 +264,9 @@ class App(ctk.CTk):
         self.home_frame_button_2 = ctk.CTkButton(self.home_frame, text="Iniciar Mapeo", image=self.image_icon_image, compound="right", command=config_map)
         self.home_frame_button_2.grid(row=3, column=0, padx=20, pady=10)
 
-        ########################## Upload frame ##########################
+        ############# Fin Frame_HOME #############
+
+        ############# Upload frame #############
         self.second_frame = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.second_frame.grid_columnconfigure(0, weight=1)
 
@@ -186,7 +278,9 @@ class App(ctk.CTk):
         self.second_frame_button_2 = ctk.CTkButton(self.second_frame, text="Iniciar", image=self.image_icon_image, compound="right")
         self.second_frame_button_2.grid(row=2, column=0, padx=20, pady=10)
 
-        ########################## Test frame ##########################
+        ############# Fin Frame_Upload #############
+
+        ############# Test frame #############
         self.third_frame = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.third_frame.grid_columnconfigure(0, weight=1)
 
@@ -198,16 +292,18 @@ class App(ctk.CTk):
         self.frame_test_mid.grid(column=0, row=1, pady=5)
 
         ### Buttons 
-        self.third_frame_button_1 = ctk.CTkButton(self.frame_test_mid, text="", image=self.home_image, height=45, width=45)
+        self.third_frame_button_1 = ctk.CTkButton(self.frame_test_mid, text="", image=self.home_image, height=45, width=45, command= go_home)
         self.third_frame_button_1.grid(row=1, column=1, padx=5, pady=5)
-        self.third_frame_button_2 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_up, height=60, width=45)
+        self.third_frame_button_2 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_up, height=60, width=45, command= lambda: test_up(10))
         self.third_frame_button_2.grid(row=0, column=1, pady=(20,5))
-        self.third_frame_button_3 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_down, height=60, width=45)
+        self.third_frame_button_3 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_down, height=60, width=45, command= lambda: test_down(10))
         self.third_frame_button_3.grid(row=2, column=1, pady=(5,20))
-        self.third_frame_button_4 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_left, height=45, width=60)
+        self.third_frame_button_4 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_left, height=45, width=60, command= lambda: test_left(10))
         self.third_frame_button_4.grid(row=1, column=0, padx=(20,5))
-        self.third_frame_button_4 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_right, height=45, width=60)
+        self.third_frame_button_4 = ctk.CTkButton(self.frame_test_mid, text="", image=self.row_image_right, height=45, width=60, command= lambda: test_right(10))
         self.third_frame_button_4.grid(row=1, column=2, padx=(5,20))
+
+        ############# Fin Frame_Test #############
 
         # select default frame
         self.select_frame_by_name("home")
