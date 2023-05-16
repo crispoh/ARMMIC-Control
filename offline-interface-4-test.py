@@ -157,6 +157,7 @@ class App(ctk.CTk):
         ############# Cargar Imagenes #############
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files-ctk")
         self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "CustomTkinter_logo_single.png")), size=(26, 26))
+        self.arm_setup_image = ctk.CTkImage(Image.open(os.path.join(image_path, "setup.png")), size=(500, 430))
         self.large_name_home = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-home.png")), size=(500, 150))
         self.large_name_file = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-file.png")), size=(500, 150))
         self.large_name_config = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-cofig.png")), size=(500, 150))
@@ -167,6 +168,8 @@ class App(ctk.CTk):
                                                  dark_image=Image.open(os.path.join(image_path, "file-light.png")), size=(20, 20))
         self.setting_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "config-dark.png")),
                                                      dark_image=Image.open(os.path.join(image_path, "config-light.png")), size=(20, 20))
+        self.setup_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "book-dark.png")),
+                                                     dark_image=Image.open(os.path.join(image_path, "book-light.png")), size=(20, 20))
         self.row_image_down = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_down.png")), size=(20, 20))
         self.row_image_up = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_up.png")), size=(20, 20))
         self.row_image_left = ctk.CTkImage(Image.open(os.path.join(image_path, "row_light_left.png")), size=(20, 20))
@@ -181,7 +184,7 @@ class App(ctk.CTk):
         ############# Barra navegacion IZQ #############
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
-        self.navigation_frame.grid_rowconfigure(4, weight=1)
+        self.navigation_frame.grid_rowconfigure(5, weight=1)
 
         self.navigation_frame_label = ctk.CTkLabel(self.navigation_frame, text="  Control ARMMIC", image=self.logo_image,
                                                              compound="left", font=ctk.CTkFont(size=15, weight="bold"))
@@ -201,6 +204,11 @@ class App(ctk.CTk):
                                                       fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                                       image=self.setting_image, anchor="w", command=self.frame_3_button_event)
         self.frame_3_button.grid(row=3, column=0, sticky="ew")
+
+        self.frame_4_button = ctk.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Guia",
+                                                      fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+                                                      image=self.setup_image, anchor="w", command=self.frame_4_button_event)
+        self.frame_4_button.grid(row=4, column=0, sticky="ew")
 
         self.appearance_mode_menu = ctk.CTkOptionMenu(self.navigation_frame, values=["System", "Light", "Dark"],
                                                                 command=self.change_appearance_mode_event)
@@ -305,6 +313,15 @@ class App(ctk.CTk):
 
         ############# Fin Frame_Test #############
 
+        ############# Config frame #############
+        self.four_frame = ctk.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self.four_frame.grid_columnconfigure(0, weight=1)
+
+        self.four_frame_large_image_label = ctk.CTkLabel(self.four_frame, text="", image=self.arm_setup_image)
+        self.four_frame_large_image_label.grid(row=0, column=0, padx=20, pady=10)
+
+        ############# Fin Frame_Config #############
+
         # select default frame
         self.select_frame_by_name("home")
 
@@ -313,6 +330,7 @@ class App(ctk.CTk):
         self.home_button.configure(fg_color=("gray75", "gray25") if name == "home" else "transparent")
         self.frame_2_button.configure(fg_color=("gray75", "gray25") if name == "frame_2" else "transparent")
         self.frame_3_button.configure(fg_color=("gray75", "gray25") if name == "frame_3" else "transparent")
+        self.frame_4_button.configure(fg_color=("gray75", "gray25") if name == "frame_4" else "transparent")
 
         # show selected frame
         if name == "home":
@@ -327,6 +345,10 @@ class App(ctk.CTk):
             self.third_frame.grid(row=0, column=1, sticky="nsew")
         else:
             self.third_frame.grid_forget()
+        if name == "frame_4":
+            self.four_frame.grid(row=0, column=1, sticky="nsew")
+        else:
+            self.four_frame.grid_forget()
 
     def home_button_event(self):
         self.select_frame_by_name("home")
@@ -336,6 +358,9 @@ class App(ctk.CTk):
 
     def frame_3_button_event(self):
         self.select_frame_by_name("frame_3")
+
+    def frame_4_button_event(self):
+        self.select_frame_by_name("frame_4")
 
     def change_appearance_mode_event(self, new_appearance_mode):
         ctk.set_appearance_mode(new_appearance_mode)
