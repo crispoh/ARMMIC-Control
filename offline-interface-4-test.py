@@ -17,7 +17,7 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("Control ARMMIC")
-        self.geometry("750x450")
+        self.geometry("800x450")
 
         # Configura el grid layout 1x2
         self.grid_rowconfigure(0, weight=1)
@@ -62,29 +62,47 @@ class App(ctk.CTk):
 
             X = self.nameEntryX.get() ## desplazamiento en X (mm)
             Y = self.nameEntryY.get() ## desplazamiento en Y (mm)
-            A = self.nameEntryA.get() ## Altura inicial (mm)
-            B = self.nameEntryB.get() ## Ancho final (mm)
+            AI = self.nameEntryAI.get() ## Altura inicial (mm)
+            AF = self.nameEntryAF.get() ## Altura final (mm)
+            BI = self.nameEntryBI.get() ## Ancho inicial (mm)
+            BF= self.nameEntryBF.get() ## Ancho final (mm)
             ##Configuración de los datos
             ##ceros
             if int(X) == 0 and int(Y) == 0:
                 messagebox.showerror("Error", "El desplazamiento en X e Y no pueden ser 0")
 
             ## new config arm x
-            if int(B) > 0 and int(B) <= armX:
-                new_armX = int(B) ## nuevo ancho del brazo
+            if int(BF) > 0 and int(BF) <= armX:
+                new_armX = int(BF) ## nuevo ancho del brazo
             else:
                 messagebox.showerror("Error", "El ancho final está fuera del rango" + "\n" + "Rango: 1mm - " +str(armX)+ "mm" )
                 print("Error: El ancho final está fuera del rango. Rango: 1mm - " +str(armX)+ "mm")
+            
+            if int(AF) > 0 and int(AF) <= armY:
+                new_armY = int(AF) ## nuevo ancho del brazo
+            else:
+                messagebox.showerror("Error", "El ancho final está fuera del rango" + "\n" + "Rango: 1mm - " +str(armX)+ "mm" )
+                print("Error: El ancho final está fuera del rango. Rango: 1mm - " +str(armY)+ "mm")
 
             ## new config arm y
-            if int(A) >= 0 and int(A) <= armY:
-                if int(A) == 0:
-                    new_armY = armY ## nuevo largo del brazo
+            if int(AI) >= 0 and int(AI) <= new_armY:
+                if int(AI) == 0:
+                    trozoY = new_armY ## trozo Y del work zone
                 else:
-                    new_armY = armY - int(A)
+                    trozoY = new_armY - int(AI)
             else:
-                messagebox.showerror("Error", "La altitud del brazo está fuera del rango" + "\n" + "Rango: 0mm - " +str(armY)+ "mm" )
-                print("Error: La altitud del brazo está fuera del rango. Rango: 0mm - " +str(armY)+ "mm")
+                messagebox.showerror("Error", "La altitud del brazo está fuera del rango" + "\n" + "Rango: 0mm - " +str(new_armY)+ "mm" )
+                print("Error: La altitud del brazo está fuera del rango. Rango: 0mm - " +str(new_armY)+ "mm")
+
+            ## new config arm x
+            if int(BI) >= 0 and int(BI) <= new_armX:
+                if int(BI) == 0:
+                    trozoX = new_armX ## trozo X del work zone
+                else:
+                    trozoX= new_armX - int(BI)
+            else:
+                messagebox.showerror("Error", "La ANCHO del brazo está fuera del rango" + "\n" + "Rango: 0mm - " +str(new_armX)+ "mm" )
+                print("Error: La altitud del brazo está fuera del rango. Rango: 0mm - " +str(new_armX)+ "mm")
 
             ## pasos en X
             if int(X) > new_armX:
@@ -99,25 +117,32 @@ class App(ctk.CTk):
                     print("Error: El desplazamiento en Y es mayor que el ancho del brazo " + str(new_armY))
                 else:
                     ## pasos en X
-                    pasosX = new_armX/int(X)
+                    pasosX = trozoX/int(X)
                     ##Aproximamos a un numero entero
                     pasosX_floor = math.floor(pasosX)
 
                     ## pasos en Y
-                    pasosY = new_armY/int(Y)
+                    pasosY = trozoY/int(Y)
                     ##Aproximamos a un numero entero
                     pasosY_floor = math.floor(pasosY)
+                    ##Tiempo total del mapeo
+                    tiempo = 0.5
+                    total_pasos = (int(pasosY_floor)+1)*int((pasosX_floor)+1)
+                    tiempo_ejecucion = (total_pasos * (tiempo + 1))/60
                     messagebox.showinfo("Datos", "Se va a ejecutar el mapeo con los siguientes datos:" + "\n" 
                                         + str(pasosX_floor) + " pasos con desplazamiento en X cada " + str(X) + "mm" + "\n"
                                         + str(pasosY_floor) + " pasos con desplazamiento en Y cada " + str(Y) + "mm" + "\n" 
-                                        + "Total de pasos: " + str(( pasosX_floor + 1 )*( pasosY_floor + 1 )) + "\n"
-                                        + "Altura inicial: " + str(A) + "mm" + "\n" 
-                                        + "Ancho final: " + str(B) + "mm"+ "\n" 
-                                        + "Work Zone: Alto=" + str(new_armY) + "mm x Ancho:" + str(new_armX) + "mm")
+                                        + "Total de pasos: " + str(total_pasos) + "\n"
+                                        + "Altura Final: " + str(AF) + "mm" + "\n" 
+                                        + "Altura Inicial: " + str(AI) + "mm" + "\n" 
+                                        + "Ancho Final: " + str(BF) + "mm"+ "\n" 
+                                        + "Ancho Inicial: " + str(BI) + "mm"+ "\n" 
+                                        + "Work Zone: Alto=" + str(trozoY) + "mm x Ancho:" + str(trozoX) + "mm")
                     ##Confirmar datos por el usuario con un messagebox de aceptar o cancelar    
-                    if messagebox.askokcancel("Confirmar", "¿Desea continuar con el mapeo?"):
+                    if messagebox.askokcancel("Confirmar", "¿Desea continuar con el mapeo?" + "\n"
+                                        + "Tiempo Aproximado de Ejecución: " + str(tiempo_ejecucion)+ " minutos"):
                         ##Iniciar mapeo
-                        start_maping(pasosX_floor, pasosY_floor, X, Y, A)
+                        start_maping(pasosX_floor, pasosY_floor, X, Y, AI, BI, tiempo )
                     else:
                         print("Mapeo cancelado")
 
@@ -125,32 +150,33 @@ class App(ctk.CTk):
 
         ############# Iniciar mapeo con los datos ingresados #############
 
-        def start_maping(XF, YF, X, Y, A):
+        def start_maping(XF, YF, X, Y, AI,BI, t):
 
             print("Iniciando mapeo")
             ##Setear configuracion inicial
 
             go_home() #ejecuta movimiento HOME
-            test_up(A) #ejecuta movimiento CRECIENTE Y
+            test_up(AI) #ejecuta movimiento CRECIENTE Y
+            test_right(BI) #ejecuta movimiento CRECIENTE x
 
             ##EJECUTAR MAPEO
             j,i = 0,0
             for i in range(XF):
                 test_up(X) #ejecuta movimiento CRECIENTE Y
                 print("("+str(i)+","+str(j)+")") #ejecuta SERVO O SEÑAL
-                time.sleep(0.5) # Se detiene en el punto
+                time.sleep(int(t)) # Se detiene en el punto
                 if i % 2 == 0:
                     for j in range(YF):
                         test_left(Y) #ejecuta movimiento CRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
-                        #ejecuta SERVO O SEÑAL
-                        time.sleep(0.5)   # Se detiene enel punto  
+                        #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
+                        time.sleep(int(t))   # Se detiene enel punto  
                 else:
                     for j in range(YF, 0, -1):
                         test_right(Y) #ejecuta movimiento DECRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
-                        #ejecuta SERVO O SEÑAL
-                        time.sleep(0.5) # Se detiene en el punto
+                        #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
+                        time.sleep(int(t)) # Se detiene en el punto
 
         ############# FIN MAPEO #############
 
@@ -240,7 +266,7 @@ class App(ctk.CTk):
 
         ###Entry Label Y 0
         self.frame_def_y = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_y.grid(column=1, row=0, padx=(5, 10),pady=(10,5))
+        self.frame_def_y.grid(column=0, row=1, padx=(5, 10),pady=(10,5))
         #### Label def Y
         self.nameLabel = ctk.CTkLabel(self.frame_def_y, text="Densidad Y")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
@@ -248,25 +274,45 @@ class App(ctk.CTk):
         self.nameEntryY = ctk.CTkEntry(self.frame_def_y, placeholder_text="Ingresar", justify="center")
         self.nameEntryY.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
 
-        ###Entry Label Altura
+        ###Entry Label Altura min
         self.frame_def_x1 = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_x1.grid(column=0, row=1, padx=(10, 5),pady=(5, 10))
+        self.frame_def_x1.grid(column=1, row=1, padx=(10, 5),pady=(5, 10))
         #### Label def Altura
         self.nameLabel = ctk.CTkLabel(self.frame_def_x1, text="Altura Inicial")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
         #### Entry def Altura ## DATO A INGRESAR
-        self.nameEntryA = ctk.CTkEntry(self.frame_def_x1, placeholder_text="Ingresar", justify="center")
-        self.nameEntryA.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+        self.nameEntryAI = ctk.CTkEntry(self.frame_def_x1, placeholder_text="Ingresar", justify="center")
+        self.nameEntryAI.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
 
-        ###Entry Label Ancho
+        ###Entry Label Alto max
         self.frame_def_y1 = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_y1.grid(column=1, row=1, padx=(5, 10),pady=(5, 10))
+        self.frame_def_y1.grid(column=2, row=1, padx=(5, 10),pady=(5, 10))
+        #### Label def Alto max
+        self.nameLabel = ctk.CTkLabel(self.frame_def_y1, text="Alto Max.")
+        self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
+        ##### Entry def Alto max
+        self.nameEntryAF = ctk.CTkEntry(self.frame_def_y1, placeholder_text="Ingresar", justify="center")
+        self.nameEntryAF.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+
+        ###Entry Label Ancho min
+        self.frame_def_y1 = ctk.CTkFrame(self.frame_home_vars, width=70)
+        self.frame_def_y1.grid(column=1, row=0, padx=(5, 10),pady=(5, 10))
+        #### Label def Ancho min
+        self.nameLabel = ctk.CTkLabel(self.frame_def_y1, text="Ancho Inicial")
+        self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
+        ##### Entry def Ancho min ## DATO A INGRESAR
+        self.nameEntryBI = ctk.CTkEntry(self.frame_def_y1, placeholder_text="Ingresar", justify="center")
+        self.nameEntryBI.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+        
+        ###Entry Label Ancho max
+        self.frame_def_y1 = ctk.CTkFrame(self.frame_home_vars, width=70)
+        self.frame_def_y1.grid(column=2, row=0, padx=(5, 10),pady=(5, 10))
         #### Label def Ancho
         self.nameLabel = ctk.CTkLabel(self.frame_def_y1, text="Ancho Max.")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
         ##### Entry def Ancho ## DATO A INGRESAR
-        self.nameEntryB = ctk.CTkEntry(self.frame_def_y1, placeholder_text="Ingresar", justify="center")
-        self.nameEntryB.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
+        self.nameEntryBF = ctk.CTkEntry(self.frame_def_y1, placeholder_text="Ingresar", justify="center")
+        self.nameEntryBF.grid(row=1, column=0, padx=20, pady=(3,15), sticky="ew", )
 
         ## Boton_Frame_HOME
         self.home_frame_button_2 = ctk.CTkButton(self.home_frame, text="Iniciar Mapeo", image=self.image_icon_image, compound="right", command=config_map)
