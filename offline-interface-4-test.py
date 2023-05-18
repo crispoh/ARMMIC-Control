@@ -4,6 +4,7 @@ import os
 from PIL import Image
 import math
 import time
+import csv
 
 
 class CustomButton(ctk.CTkButton):
@@ -146,7 +147,28 @@ class App(ctk.CTk):
                     else:
                         print("Mapeo cancelado")
 
-        ############# Fin de la configuración de los datos #############
+        ############# Crear .csv y crea nombres de columnas #############
+
+        def crear_csv():
+            # Nombres de las columnas
+            columnas = ['x', 'y', "Datos"]
+            # Crear el archivo CSV y escribir los nombres de las columnas
+            with open('datos.csv', 'w', newline='') as archivo_csv:
+                escritor_csv = csv.writer(archivo_csv)
+                escritor_csv.writerow(columnas)
+
+        ############# Añade el dato del mapeo a la ultima fila #############
+
+        def mandar_osciloscopio(ejeX, ejeY, datos):
+            print("Mandar señal al osciloscopio")
+            ##almacenar coordenadas en un archivo .csv y concatenar
+            # Abrir el archivo CSV en modo de escritura
+            with open('datos.csv', 'a', newline='') as archivo_csv:
+                # Crear un objeto escritor CSV
+                escritor_csv = csv.writer(archivo_csv)
+        
+                # Escribir una nueva fila con los datos de "x", "y" y "Datos"
+                escritor_csv.writerow([ejeX, ejeY, datos])
 
         ############# Iniciar mapeo con los datos ingresados #############
 
@@ -156,6 +178,8 @@ class App(ctk.CTk):
             ##Setear configuracion inicial
 
             go_home() #ejecuta movimiento HOME
+            ##genera el .csv
+            crear_csv()
             test_up(AI) #ejecuta movimiento CRECIENTE Y
             test_right(BI) #ejecuta movimiento CRECIENTE x
 
@@ -164,26 +188,30 @@ class App(ctk.CTk):
             for i in range(XF):
                 test_up(X) #ejecuta movimiento CRECIENTE Y
                 print("("+str(i)+","+str(j)+")") #ejecuta SERVO O SEÑAL
-                time.sleep(int(t)) # Se detiene en el punto
+                time.sleep(t) # Se detiene en el punto
                 if i % 2 == 0:
                     for j in range(YF):
                         test_left(Y) #ejecuta movimiento CRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
                         #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
-                        time.sleep(int(t))   # Se detiene enel punto  
+                        mandar_osciloscopio(i,j,t)
+                        time.sleep(t)   # Se detiene enel punto  
                 else:
                     for j in range(YF, 0, -1):
                         test_right(Y) #ejecuta movimiento DECRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
                         #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
-                        time.sleep(int(t)) # Se detiene en el punto
+                        mandar_osciloscopio(i,j,t)
+                        time.sleep(t) # Se detiene en el punto
 
         ############# FIN MAPEO #############
+
 
         ############# Cargar Imagenes #############
         image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "files-ctk")
         self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "CustomTkinter_logo_single.png")), size=(26, 26))
-        self.arm_setup_image = ctk.CTkImage(Image.open(os.path.join(image_path, "setup.png")), size=(500, 430))
+        self.arm_setup_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "setup_light.png")),
+                                                 dark_image=Image.open(os.path.join(image_path, "setup_dark.png")), size=(500, 430))
         self.large_name_home = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-home.png")), size=(500, 150))
         self.large_name_file = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-file.png")), size=(500, 150))
         self.large_name_config = ctk.CTkImage(Image.open(os.path.join(image_path, "large-name-cofig.png")), size=(500, 150))
@@ -254,9 +282,10 @@ class App(ctk.CTk):
         ## Frame Variables
         self.frame_home_vars = ctk.CTkFrame(self.home_frame)
         self.frame_home_vars.grid(column=0, row=1, pady=5)
+
         ###Entry Label X 0
         self.frame_def_x = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_x.grid(column=0, row=0, padx=(10, 5),pady=(10,5))
+        self.frame_def_x.grid(row=0, column=0, padx=(10, 5),pady=(10,5))
         #### Label def x
         self.nameLabel = ctk.CTkLabel(self.frame_def_x, text="Densidad X")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
@@ -266,7 +295,7 @@ class App(ctk.CTk):
 
         ###Entry Label Y 0
         self.frame_def_y = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_y.grid(column=0, row=1, padx=(5, 10),pady=(10,5))
+        self.frame_def_y.grid(row=1, column=0, padx=(10, 5),pady=(5,10))
         #### Label def Y
         self.nameLabel = ctk.CTkLabel(self.frame_def_y, text="Densidad Y")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
@@ -276,7 +305,7 @@ class App(ctk.CTk):
 
         ###Entry Label Altura min
         self.frame_def_x1 = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_x1.grid(column=1, row=1, padx=(10, 5),pady=(5, 10))
+        self.frame_def_x1.grid(row=1, column=1, padx=5,pady=(5, 10))
         #### Label def Altura
         self.nameLabel = ctk.CTkLabel(self.frame_def_x1, text="Altura Inicial")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
@@ -286,7 +315,7 @@ class App(ctk.CTk):
 
         ###Entry Label Alto max
         self.frame_def_y1 = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_y1.grid(column=2, row=1, padx=(5, 10),pady=(5, 10))
+        self.frame_def_y1.grid(row=1, column=2, padx=(5, 10),pady=(5, 10))
         #### Label def Alto max
         self.nameLabel = ctk.CTkLabel(self.frame_def_y1, text="Alto Max.")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
@@ -296,7 +325,7 @@ class App(ctk.CTk):
 
         ###Entry Label Ancho min
         self.frame_def_y1 = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_y1.grid(column=1, row=0, padx=(5, 10),pady=(5, 10))
+        self.frame_def_y1.grid(row=0, column=1, padx=5,pady=(10, 5))
         #### Label def Ancho min
         self.nameLabel = ctk.CTkLabel(self.frame_def_y1, text="Ancho Inicial")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
@@ -306,7 +335,7 @@ class App(ctk.CTk):
         
         ###Entry Label Ancho max
         self.frame_def_y1 = ctk.CTkFrame(self.frame_home_vars, width=70)
-        self.frame_def_y1.grid(column=2, row=0, padx=(5, 10),pady=(5, 10))
+        self.frame_def_y1.grid(row=0, column=2, padx=(5, 10),pady=(10, 5))
         #### Label def Ancho
         self.nameLabel = ctk.CTkLabel(self.frame_def_y1, text="Ancho Max.")
         self.nameLabel.grid(row=0, column=0, padx=20, pady=(10,3), sticky="ew")
