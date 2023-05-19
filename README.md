@@ -8,6 +8,10 @@ You can control the mapping in a custom area to be able to go through a specific
 Saves the data in ".csv" with additional information (Oscilloscope Data).
 
 
+## Repositories used
+
+Arduino Software: 
+- [GRBL](https://github.com/grbl/grbl.git) 
 ## Run Locally
 
 Clone the project
@@ -22,7 +26,7 @@ Go to the project directory
   cd ARMMIC-Control
 ```
 
-Install libraries (pip required)
+Install libraries (python and pip required)
 
 ```bash
   pip install pyserial
