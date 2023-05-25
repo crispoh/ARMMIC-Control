@@ -1,11 +1,12 @@
-from tkinter import messagebox
-import customtkinter as ctk
-import os
-from PIL import Image
-import math
-import time
-import csv
-
+from tkinter import messagebox #Crear ventanas emergentes
+import customtkinter as ctk #Interfaz gráfica
+import os #Para crear directorios
+from PIL import Image #Para mostrar imágenes
+import math #Para operaciones matemáticas
+import time #Para medir el tiempo
+import csv #Para guardar los datos en un archivo csv
+import pyvisa #Para comunicarse con el osciloscopio
+import numpy as np #Para manejos de arrays
 
 class CustomButton(ctk.CTkButton):
     def __init__(self, master=None, text=None, image=None, command=None, **kwargs):
@@ -127,7 +128,7 @@ class App(ctk.CTk):
                     ##Aproximamos a un numero entero
                     pasosY_floor = math.floor(pasosY)
                     ##Tiempo total del mapeo
-                    tiempo = 0.5
+                    tiempo = 2
                     total_pasos = (int(pasosY_floor)+1)*int((pasosX_floor)+1)
                     tiempo_ejecucion = (total_pasos * (tiempo + 1))/60
                     messagebox.showinfo("Datos", "Se va a ejecutar el mapeo con los siguientes datos:" + "\n" 
@@ -170,6 +171,22 @@ class App(ctk.CTk):
                 # Escribir una nueva fila con los datos de "x", "y" y "Datos"
                 escritor_csv.writerow([ejeX, ejeY, datos])
 
+        ############# Inicia toma de datos del osciloscopio y almacena arreglo #############
+
+        def toma_datos_osciloscopio(x, y):
+            # Configurar el osciloscopio para adquirir los datos de la forma de onda
+            osciloscopio.write("DAT:SOU CH1")  # Configurar la fuente de datos como Canal 1
+            osciloscopio.write("DAT:ENC RPB")  # Configurar el formato de datos como binario sin comprimir
+            osciloscopio.write("DAT:WID 2")    # Configurar el ancho de datos en 2 bytes (int16)
+            osciloscopio.write("DAT:STAR 1")   # Configurar el punto de inicio de los datos en 1
+            osciloscopio.write("DAT:STOP 1000")# Configurar el punto de parada de los datos en 1000
+
+            # Obtener los datos de la forma de onda
+            datos_binarios = osciloscopio.query_binary_values("CURV?", datatype='h', container=np.array)
+
+            #almacenar datos en un archivo .csv
+            mandar_osciloscopio(x,y,datos_binarios[:10])
+
         ############# Iniciar mapeo con los datos ingresados #############
 
         def start_maping(XF, YF, X, Y, AI,BI, t):
@@ -194,14 +211,15 @@ class App(ctk.CTk):
                         test_left(Y) #ejecuta movimiento CRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
                         #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
-                        mandar_osciloscopio(i,j,t)
+                        toma_datos_osciloscopio(i,j)
+
                         time.sleep(t)   # Se detiene enel punto  
                 else:
                     for j in range(YF, 0, -1):
                         test_right(Y) #ejecuta movimiento DECRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
                         #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
-                        mandar_osciloscopio(i,j,t)
+                        toma_datos_osciloscopio(i,j)
                         time.sleep(t) # Se detiene en el punto
 
         ############# FIN MAPEO #############
@@ -442,8 +460,17 @@ class App(ctk.CTk):
 
 
 if __name__ == "__main__":
+    
+    # Crear instancia del administrador de recursos
+    rm = pyvisa.ResourceManager()
+
+    # Abrir conexión con el osciloscopio
+    osciloscopio = rm.open_resource("USB0::0x0699::0x0367::C050620::INSTR")
 
     app = App()
     app.mainloop()
+
+    # Cerrar la conexión con el osciloscopio
+    osciloscopio.close()
 
 
