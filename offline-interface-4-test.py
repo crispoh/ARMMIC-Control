@@ -9,8 +9,8 @@ import pyvisa #Para comunicarse con el osciloscopio
 import numpy as np #Para manejos de arrays
 
 class CustomButton(ctk.CTkButton):
-    def __init__(self, master=None, text=None, image=None, command=None, **kwargs):
-        super().__init__(master, **kwargs)
+    def __init__(self, master=None, text=None, image=None, command=None, **kwargs): 
+        super().__init__(master, **kwargs) 
         self.configure(text=text, image=image, compound=ctk.LEFT, command=command)
 
 
@@ -83,8 +83,8 @@ class App(ctk.CTk):
             if int(AF) > 0 and int(AF) <= armY:
                 new_armY = int(AF) ## nuevo ancho del brazo
             else:
-                messagebox.showerror("Error", "El ancho final está fuera del rango" + "\n" + "Rango: 1mm - " +str(armX)+ "mm" )
-                print("Error: El ancho final está fuera del rango. Rango: 1mm - " +str(armY)+ "mm")
+                messagebox.showerror("Error", "El Alto final está fuera del rango" + "\n" + "Rango: 1mm - " +str(armY)+ "mm" )
+                print("Error: El alto final está fuera del rango. Rango: 1mm - " +str(armY)+ "mm")
 
             ## new config arm y
             if int(AI) >= 0 and int(AI) <= new_armY:
@@ -103,8 +103,8 @@ class App(ctk.CTk):
                 else:
                     trozoX= new_armX - int(BI)
             else:
-                messagebox.showerror("Error", "La ANCHO del brazo está fuera del rango" + "\n" + "Rango: 0mm - " +str(new_armX)+ "mm" )
-                print("Error: La altitud del brazo está fuera del rango. Rango: 0mm - " +str(new_armX)+ "mm")
+                messagebox.showerror("Error", "El ancho del brazo está fuera del rango" + "\n" + "Rango: 0mm - " +str(new_armX)+ "mm" )
+                print("Error: El ancho del brazo está fuera del rango. Rango: 0mm - " +str(new_armX)+ "mm")
 
             ## pasos en X
             if int(X) > new_armX:
@@ -161,7 +161,6 @@ class App(ctk.CTk):
         ############# Añade el dato del mapeo a la ultima fila #############
 
         def mandar_osciloscopio(ejeX, ejeY, datos):
-            print("Mandar señal al osciloscopio")
             ##almacenar coordenadas en un archivo .csv y concatenar
             # Abrir el archivo CSV en modo de escritura
             with open('datos.csv', 'a', newline='') as archivo_csv:
@@ -174,18 +173,12 @@ class App(ctk.CTk):
         ############# Inicia toma de datos del osciloscopio y almacena arreglo #############
 
         def toma_datos_osciloscopio(x, y):
-            # Configurar el osciloscopio para adquirir los datos de la forma de onda
-            osciloscopio.write("DAT:SOU CH1")  # Configurar la fuente de datos como Canal 1
-            osciloscopio.write("DAT:ENC RPB")  # Configurar el formato de datos como binario sin comprimir
-            osciloscopio.write("DAT:WID 2")    # Configurar el ancho de datos en 2 bytes (int16)
-            osciloscopio.write("DAT:STAR 1")   # Configurar el punto de inicio de los datos en 1
-            osciloscopio.write("DAT:STOP 1000")# Configurar el punto de parada de los datos en 1000
-
             # Obtener los datos de la forma de onda
             datos_binarios = osciloscopio.query_binary_values("CURV?", datatype='h', container=np.array)
 
             #almacenar datos en un archivo .csv
             mandar_osciloscopio(x,y,datos_binarios[:10])
+            print("Datos almacenados en .csv")
 
         ############# Iniciar mapeo con los datos ingresados #############
 
@@ -193,13 +186,17 @@ class App(ctk.CTk):
 
             print("Iniciando mapeo")
             ##Setear configuracion inicial
-
+            # Configurar el osciloscopio para adquirir los datos de la forma de onda
+            osciloscopio.write("DAT:SOU CH1")  # Configurar la fuente de datos como Canal 1
+            osciloscopio.write("DAT:ENC RPB")  # Configurar el formato de datos como binario sin comprimir
+            osciloscopio.write("DAT:WID 2")    # Configurar el ancho de datos en 2 bytes (int16)
+            osciloscopio.write("DAT:STAR 1")   # Configurar el punto de inicio de los datos en 1
+            osciloscopio.write("DAT:STOP 1000")# Configurar el punto de parada de los datos en 1000
             go_home() #ejecuta movimiento HOME
             ##genera el .csv
             crear_csv()
             test_up(AI) #ejecuta movimiento CRECIENTE Y
             test_right(BI) #ejecuta movimiento CRECIENTE x
-
             ##EJECUTAR MAPEO
             j,i = 0,0
             for i in range(XF):
@@ -212,7 +209,6 @@ class App(ctk.CTk):
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
                         #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
                         toma_datos_osciloscopio(i,j)
-
                         time.sleep(t)   # Se detiene enel punto  
                 else:
                     for j in range(YF, 0, -1):
