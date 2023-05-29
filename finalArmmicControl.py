@@ -7,6 +7,7 @@ import time #Para medir el tiempo
 import csv #Para guardar los datos en un archivo csv
 import pyvisa #Para comunicarse con el osciloscopio
 import numpy as np #Para manejos de arrays
+import serial #Para comunicarse con el arduino
 
 class CustomButton(ctk.CTkButton):
     def __init__(self, master=None, text=None, image=None, command=None, **kwargs): 
@@ -35,27 +36,27 @@ class App(ctk.CTk):
         # Función HOME (0,0), NO FUNCIONA FALTA EL SWITCH FINAL DE CARRERA
         def go_home():
             valor = '$H' + '\n'
-            ##ser.write(valor.encode())
+            ser.write(valor.encode())
             print("YENDO A HOME...: " + valor)
         # Función Subir un paso
         def test_up(a):
             valor = '$J=G21G91Y'+ str(a) +'F60' + '\n'
-            ##ser.write(valor.encode())
+            ser.write(valor.encode())
             print("UP: " + str(a) + "mm = " + valor)
         # Función BAJAR un paso
         def test_down(a):
             valor = '$J=G21G91Y-'+ str(a) +'F60' + '\n'
-            ##ser.write(valor.encode())
+            ser.write(valor.encode())
             print("DOWN: " + str(a) + "mm = " + valor)
         # Función un paso IZQUIERDA
         def test_left(a):
             valor = '$J=G21G91X-'+ str(a) +'F60' + '\n'
-            ##ser.write(valor.encode())
+            ser.write(valor.encode())
             print("LEFT: " + str(a) + "mm = " + valor)
         # Función un paso DERECHA
         def test_right(a):
             valor = '$J=G21G91X'+ str(a) +'F60' + '\n'
-            ##ser.write(valor.encode())
+            ser.write(valor.encode())
             print("RIGHT: " + str(a) + "mm = " + valor)
 
         
@@ -128,7 +129,7 @@ class App(ctk.CTk):
                     ##Aproximamos a un numero entero
                     pasosY_floor = math.floor(pasosY)
                     ##Tiempo total del mapeo
-                    tiempo = 2
+                    tiempo = 5
                     total_pasos = (int(pasosY_floor)+1)*int((pasosX_floor)+1)
                     tiempo_ejecucion = (total_pasos * (tiempo + 1))/60
                     messagebox.showinfo("Datos", "Se va a ejecutar el mapeo con los siguientes datos:" + "\n" 
@@ -209,18 +210,20 @@ class App(ctk.CTk):
                 time.sleep(t) # Se detiene en el punto
                 if i % 2 == 0:
                     for j in range(YF):
-                        test_left(Y) #ejecuta movimiento CRECIENTE X
+                        test_right(Y) #ejecuta movimiento CRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
                         #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
-                        toma_datos_osciloscopio(i,j)
                         time.sleep(t)   # Se detiene enel punto  
+                        toma_datos_osciloscopio(i,j)
+                        
                 else:
                     for j in range(YF, 0, -1):
-                        test_right(Y) #ejecuta movimiento DECRECIENTE X
+                        test_left(Y) #ejecuta movimiento DECRECIENTE X
                         print("("+str(i)+","+str(j)+")") ##muestra coordenadas en consola
                         #EJECUTAR OBTENCION DE DATOS DEL OSCILOSCOPIO
+                        time.sleep(t)   # Se detiene enel punto  
                         toma_datos_osciloscopio(i,j)
-                        time.sleep(t) # Se detiene en el punto
+
             ##EJECUTar mapeo terminado
             mapeo_terminado()
 
@@ -478,9 +481,20 @@ if __name__ == "__main__":
     # Abrir conexión con el osciloscopio
     osciloscopio = rm.open_resource("USB0::0x0699::0x0367::C050620::INSTR")
 
+    # Configurar el puerto serial
+    ser = serial.Serial('COM4', 115200)
+
+    # Wake up grbl
+    start = '\r\n\r\n' + '\n'
+    ser.write(start.encode())
+    time.sleep(2)   # Wait for grbl to initialize
+    ser.flushInput()  # Flush startup text in serial input
+
     app = App()
     app.mainloop()
 
+    # Cerrar el puerto serial
+    ser.close()
     # Cerrar la conexión con el osciloscopio
     osciloscopio.close()
 

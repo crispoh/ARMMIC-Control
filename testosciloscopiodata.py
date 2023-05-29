@@ -20,6 +20,6 @@ datos_binarios = osciloscopio.query_binary_values("CURV?", datatype='h', contain
 # Cerrar la conexión con el osciloscopio
 osciloscopio.close()
 
-# Mostrar los primeros 10 valores de los datos
+# Mostrar los 1000 valores de los datos
 print("Datos de la forma de onda:")
 print(datos_binarios[:1000])
