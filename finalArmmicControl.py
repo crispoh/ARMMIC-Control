@@ -129,7 +129,7 @@ class App(ctk.CTk):
                     ##Aproximamos a un numero entero
                     pasosY_floor = math.floor(pasosY)
                     ##Tiempo total del mapeo
-                    tiempo = 5
+                    tiempo = 7
                     total_pasos = (int(pasosY_floor)+1)*int((pasosX_floor)+1)
                     tiempo_ejecucion = (total_pasos * (tiempo + 1))/60
                     messagebox.showinfo("Datos", "Se va a ejecutar el mapeo con los siguientes datos:" + "\n" 
@@ -174,11 +174,17 @@ class App(ctk.CTk):
         ############# Inicia toma de datos del osciloscopio y almacena arreglo #############
 
         def toma_datos_osciloscopio(x, y):
-            # Obtener los datos de la forma de onda
+            # Obtener los datos de la forma de onda como un arreglo de NumPy
             datos_binarios = osciloscopio.query_binary_values("CURV?", datatype='h', container=np.array)
 
+            # Convertir el arreglo de NumPy a una lista de Python
+            datos_lista = datos_binarios.tolist()
+
+            # Unir los elementos de la lista con comas y almacenarlos como un string
+            datos_comas = ",".join(map(str, datos_lista))
+
             #almacenar datos en un archivo .csv
-            mandar_osciloscopio(x,y,datos_binarios[:1000])
+            mandar_osciloscopio(x,y,datos_comas)
             print("Datos almacenados en .csv")
 
         ############# Iniciar mapeo con los datos ingresados #############
